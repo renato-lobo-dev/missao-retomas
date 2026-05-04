@@ -1,27 +1,19 @@
 // index.js
 console.log("INDEX.JS A EXECUTAR");
 
-import { registarEquipa, inicializarEstadoGlobal } from "./base.js";
+
+import { registarEquipa } from "./base.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("entrarBtn");
-
-  btn.addEventListener("click", () => {
+  document.getElementById("entrarBtn").addEventListener("click", () => {
     const nome = document.getElementById("teamName").value.trim();
-
     if (!nome) {
-      alert("Por favor, insere o nome da equipa.");
+      alert("Insere o nome da equipa.");
       return;
     }
 
-    // garante que o estado global existe
-    inicializarEstadoGlobal();
-
-    // cria equipa no Firebase
-    registarEquipa(nome);
-
-
-    // vai para a página da equipa
+    registarEquipa(nome); // push + set
     window.location.href = "equipa.html";
   });
 });
+
