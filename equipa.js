@@ -179,3 +179,5 @@ function confirmarResposta() {
     });
   });
 }
+
+export { db };
