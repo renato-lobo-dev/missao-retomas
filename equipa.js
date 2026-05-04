@@ -74,31 +74,37 @@ function prepararEventos() {
    JOGO
 =========================== */
 
+
 function confirmarResposta() {
   if (!resposta || !risco) {
     alert("Escolhe resposta e risco.");
     return;
   }
 
-  // SIMULA resposta correta (ligamos às perguntas depois)
   const correta = resposta === "A";
 
-  let pn = correta ? 10 : -10;
-  let pc = correta ? 5 : -5;
+  let impactoPN = correta ? 10 : -10;
+  let impactoPC = correta ? 5 : -5;
 
   if (risco === "2") {
-    pn *= 2;
-    pc *= 2;
+    impactoPN *= 2;
+    impactoPC *= 2;
   }
 
   if (risco === "all") {
-    pn = correta ? 20 : -20;
-    pc = correta ? 20 : -20;
+    impactoPN = correta ? 20 : -20;
+    impactoPC = correta ? 20 : -20;
   }
 
-  atualizarEquipa({
-    pontosNegocio: pn,
-    pontosCliente: pc,
-    respondeuNestaRonda: true
+  // 🔑 LER ESTADO ATUAL DA EQUIPA ANTES DE ESCREVER
+  ouvirEquipa((equipa) => {
+    if (!equipa) return;
+
+    atualizarEquipa({
+      pontosNegocio: equipa.pontosNegocio + impactoPN,
+      pontosCliente: equipa.pontosCliente + impactoPC,
+      respondeuNestaRonda: true
+    });
   });
 }
+
