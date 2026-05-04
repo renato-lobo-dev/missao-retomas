@@ -12,30 +12,26 @@ import {
 
 import { perguntas } from "./perguntas.js";
 
-/* ===========================
-   INICIALIZAÇÃO
-=========================== */
+
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Formador carregado");
 
-  // Garante que o estado existe (sem sobrescrever)
+
   inicializarEstadoGlobal();
 
-  // Listeners reativos (APENAS UI)
+
   ouvirEstadoGlobal(atualizarEstadoUI);
   ouvirTodasEquipas(atualizarPlacar);
 
-  // Botões
+
   ligarBotao("abrirRonda", abrirRonda);
   ligarBotao("fecharPergunta", fecharPergunta);
   ligarBotao("proximaPergunta", proximaPergunta);
   ligarBotao("resetJogo", resetJogo);
 });
 
-/* ===========================
-   HELPERS
-=========================== */
+
 
 function ligarBotao(id, handler) {
   const btn = document.getElementById(id);
@@ -46,9 +42,6 @@ function ligarBotao(id, handler) {
   btn.addEventListener("click", handler);
 }
 
-/* ===========================
-   AÇÕES DO FORMADOR
-=========================== */
 
 function abrirRonda() {
   atualizarEstadoGlobal({ estadoRonda: "aberta" });
@@ -62,10 +55,10 @@ async function fecharPergunta() {
   const perguntaObj = perguntas[estado.perguntaAtual];
   if (!perguntaObj) return;
 
-  // Fechar ronda
+
   atualizarEstadoGlobal({ estadoRonda: "fechada" });
 
-  // Mostrar solução
+
   document.getElementById("respostaCorreta").textContent =
     perguntaObj.correta + " — " + perguntaObj.opcoes[perguntaObj.correta];
 
@@ -95,7 +88,7 @@ async function proximaPergunta() {
 async function resetJogo() {
   console.log("RESET JOGO");
 
-  // 1. Reset estado global
+
   await set(ref(db, "estadoGlobal"), {
     estadoRonda: "fechada",
     perguntaAtual: 0,
@@ -103,15 +96,12 @@ async function resetJogo() {
     totalRondas: perguntas.length
   });
 
-  // 2. APAGAR TODAS AS EQUIPAS
+
   await set(ref(db, "equipas"), null);
 
   alert("Jogo reiniciado. As equipas podem voltar a entrar.");
 }
 
-/* ===========================
-   UI – ESTADO GLOBAL
-=========================== */
 
 function atualizarEstadoUI(estado) {
   if (!estado) return;
@@ -119,17 +109,15 @@ function atualizarEstadoUI(estado) {
   const perguntaObj = perguntas[estado.perguntaAtual];
   if (!perguntaObj) return;
 
-  // Mostrar pergunta atual
+
   document.getElementById("perguntaAtualTexto").textContent =
     perguntaObj.pergunta;
 
-  // Esconder solução sempre que muda estado/pergunta
+
   document.getElementById("solucao").classList.add("hidden");
 }
 
-/* ===========================
-   UI – PLACAR
-=========================== */
+
 
 function atualizarPlacar(equipas) {
   const container = document.getElementById("equipas");
@@ -155,8 +143,8 @@ function atualizarPlacar(equipas) {
 
     div.innerHTML = `
       <strong>${eq.nome}</strong><br>
-      🙂 Cliente: ${eq.pontosCliente}<br>
-      💰 Negócio: ${eq.pontosNegocio}
+      Cliente: ${eq.pontosCliente}<br>
+      Negócio: ${eq.pontosNegocio}
     `;
 
     container.appendChild(div);
