@@ -1,4 +1,5 @@
 // index.js
+console.log("INDEX.JS A EXECUTAR"
 import { registarEquipa, inicializarEstadoGlobal } from "./base.js";
 
 document.addEventListener("DOMContentLoaded", () => {
