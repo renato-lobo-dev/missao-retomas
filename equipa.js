@@ -22,8 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
    UI
 =========================== */
 
+
 function atualizarRonda(estado) {
-  estadoGlobalAtual = estado;
+  // ✅ PROTEÇÃO OBRIGATÓRIA
+  if (!estado) {
+    console.warn("estadoGlobal ainda não existe");
+    return;
+  }
 
   const status = document.getElementById("roundStatus");
   const pergunta = document.getElementById("pergunta");
@@ -39,6 +44,7 @@ function atualizarRonda(estado) {
     confirmar.disabled = false;
   }
 }
+
 
 function atualizarEquipaUI(equipa) {
   if (!equipa) return;
