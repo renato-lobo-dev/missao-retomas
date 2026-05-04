@@ -1,9 +1,11 @@
 // equipa.js
+
 import {
   ouvirEstadoGlobal,
   ouvirEquipa,
   atualizarEquipa
 } from "./base.js";
+
 
 let resposta = null;
 let risco = null;
