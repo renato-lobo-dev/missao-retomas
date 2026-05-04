@@ -30,9 +30,16 @@ export function ouvirEstadoGlobal(callback) {
   onValue(ref(db, "estadoGlobal"), snap => callback(snap.val()));
 }
 
-export function atualizarEstadoGlobal(dados) {
-  update(ref(db, "estadoGlobal"), dados);
+
+export function inicializarEstadoGlobal() {
+  set(ref(db, "estadoGlobal"), {
+    estadoRonda: "fechada",
+    rondaAtual: 0,
+    totalRondas: 6,
+    perguntaAtual: 0
+  });
 }
+
 
 /* ===========================
    EQUIPAS
