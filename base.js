@@ -19,8 +19,49 @@ const firebaseConfig = {
   appId: "1:3061563198:web:439a5e147aca6192b9f66f"
 };
 
-// ✅ ÚNICA inicialização
+// ✅ inicialização única
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export { db, ref, set, update, onValue, push };
+/* ===========================
+   ESTADO GLOBAL
+=========================== */
+export function ouvirEstadoGlobal(callback) {
+  onValue(ref(db, "estadoGlobal"), snap => callback(snap.val()));
+}
+
+export function atualizarEstadoGlobal(dados) {
+  update(ref(db, "estadoGlobal"), dados);
+}
+
+/* ===========================
+   EQUIPAS
+=========================== */
+export function registarEquipa(nome) {
+  const nova = push(ref(db, "equipas"));
+  set(nova, {
+    nome,
+    pontosNegocio: 100,
+    pontosCliente: 100,
+    respondeuNestaRonda: false
+  });
+  localStorage.setItem("equipaId", nova.key);
+}
+
+export function ouvirEquipa(callback) {
+  const id = localStorage.getItem("equipaId");
+  if (!id) return;
+  onValue(ref(db, `equipas/${id}`), snap => callback(snap.val()));
+}
+
+/* ✅ ESTA FUNÇÃO FALTAVA */
+export function atualizarEquipa(dados) {
+  const id = localStorage.getItem("equipaId");
+  if (!id) return;
+  update(ref(db, `equipas/${id}`), dados);
+}
+
+export function ouvirTodasEquipas(callback) {
+  onValue(ref(db, "equipas"), snap => callback(snap.val()));
+}
+
