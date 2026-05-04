@@ -7,63 +7,56 @@ import {
 } from "./base.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  inicializarEstadoGlobal();
-  ouvirEstadoGlobal(atualizarUI);
-  ouvirTodasEquipas(atualizarEquipas);
+  console.log("Formador.js carregado");
 
-  document.getElementById("abrirRonda").onclick = abrirRonda;
-  document.getElementById("fecharRonda").onclick = fecharRonda;
+  inicializarEstadoGlobal();
+
+  ouvirEstadoGlobal(atualizarEstadoUI);
+  ouvirTodasEquipas(atualizarListaEquipas);
+
+  document.getElementById("abrirRonda").addEventListener("click", () => {
+    atualizarEstadoGlobal({ estadoRonda: "aberta" });
+  });
+
+  document.getElementById("fecharRonda").addEventListener("click", () => {
+    atualizarEstadoGlobal({ estadoRonda: "fechada" });
+  });
 });
 
 /* ===========================
-   CONTROLO
+   UI – ESTADO GLOBAL
 =========================== */
 
-function abrirRonda() {
-  atualizarEstadoGlobal({
-    estadoRonda: "aberta"
-  });
-}
-
-function fecharRonda() {
-  atualizarEstadoGlobal({
-    estadoRonda: "fechada",
-    rondaAtual: incrementRonda,
-    perguntaAtual: incrementPergunta
-  });
-}
-
-function incrementRonda(prev) {
-  return prev + 1;
-}
-
-function incrementPergunta(prev) {
-  return prev + 1;
+function atualizarEstadoUI(estado) {
+  const el = document.getElementById("perguntaAtual");
+  el.textContent =
+    `Ronda ${estado.rondaAtual + 1} / ${estado.totalRondas} — ` +
+    (estado.estadoRonda === "aberta" ? "ABERTA" : "FECHADA");
 }
 
 /* ===========================
-   UI
+   UI – EQUIPAS
 =========================== */
 
-function atualizarUI(estado) {
-  document.getElementById("perguntaAtual").textContent =
-    `Ronda ${estado.rondaAtual + 1} / ${estado.totalRondas}`;
-}
-
-function atualizarEquipas(equipas) {
+function atualizarListaEquipas(equipas) {
   const container = document.getElementById("equipas");
   container.innerHTML = "";
 
-  if (!equipas) return;
+  if (!equipas) {
+    container.innerHTML = "<p>Sem equipas registadas</p>";
+    return;
+  }
 
   Object.values(equipas).forEach(eq => {
     const div = document.createElement("div");
     div.className = "team";
+
     div.innerHTML = `
       <strong>${eq.nome}</strong>
       💰 Negócio: ${eq.pontosNegocio}<br>
       🙂 Cliente: ${eq.pontosCliente}
     `;
+
     container.appendChild(div);
   });
 }
