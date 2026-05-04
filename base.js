@@ -6,7 +6,8 @@ import {
   set,
   update,
   onValue,
-  push
+  push,
+  get
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
 /* ===========================
@@ -31,29 +32,41 @@ const db = getDatabase(app);
    ESTADO GLOBAL (FORMADOR)
 =========================== */
 
+/**
+ * Cria o estado global do jogo (se ainda não existir)
+ */
 export function inicializarEstadoGlobal() {
   set(ref(db, "estadoGlobal"), {
-    estadoRonda: "fechada",
+    estadoRonda: "fechada",   // aberta | fechada
     rondaAtual: 0,
     perguntaAtual: 0,
-    totalRondas: 6
+    totalRondas: 7
   });
 }
 
+/**
+ * Listener reativo do estado global
+ */
 export function ouvirEstadoGlobal(callback) {
   onValue(ref(db, "estadoGlobal"), snapshot => {
     callback(snapshot.val());
   });
 }
 
+/**
+ * Atualização pontual do estado global
+ */
 export function atualizarEstadoGlobal(dados) {
-  update(ref(db, "estadoGlobal"), dados);
+  return update(ref(db, "estadoGlobal"), dados);
 }
 
 /* ===========================
    EQUIPAS
 =========================== */
 
+/**
+ * Regista nova equipa
+ */
 export function registarEquipa(nome) {
   const novaEquipa = push(ref(db, "equipas"));
 
@@ -64,10 +77,12 @@ export function registarEquipa(nome) {
     respondeuNestaRonda: false
   });
 
-  // Guarda o ID da equipa localmente
   localStorage.setItem("equipaId", novaEquipa.key);
 }
 
+/**
+ * Listener reativo da equipa atual (UI apenas)
+ */
 export function ouvirEquipa(callback) {
   const equipaId = localStorage.getItem("equipaId");
   if (!equipaId) return;
@@ -77,17 +92,32 @@ export function ouvirEquipa(callback) {
   });
 }
 
+/**
+ * Atualiza dados da equipa (ESCRITA)
+ */
 export function atualizarEquipa(dados) {
   const equipaId = localStorage.getItem("equipaId");
   if (!equipaId) return;
 
-  update(ref(db, `equipas/${equipaId}`), dados);
+  return update(ref(db, `equipas/${equipaId}`), dados);
 }
 
+/**
+ * Listener de todas as equipas (placar do formador)
+ */
 export function ouvirTodasEquipas(callback) {
   onValue(ref(db, "equipas"), snapshot => {
     callback(snapshot.val());
   });
 }
 
-export {db};
+/* ===========================
+   EXPORTS BASE
+=========================== */
+
+// ✅ Export explícito do db (necessário no equipa.js)
+export {
+  db,
+  ref,
+  get
+};
