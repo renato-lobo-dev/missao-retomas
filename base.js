@@ -90,3 +90,4 @@ export function ouvirTodasEquipas(callback) {
   });
 }
 
+export {db};
