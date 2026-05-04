@@ -92,7 +92,9 @@ async function proximaPergunta() {
 }
 
 async function resetJogo() {
-  // Reset estado global
+  console.log("RESET JOGO");
+
+  // 1. Reset estado global
   await set(ref(db, "estadoGlobal"), {
     estadoRonda: "fechada",
     perguntaAtual: 0,
@@ -100,20 +102,10 @@ async function resetJogo() {
     totalRondas: perguntas.length
   });
 
-  // Reset estado das equipas (opcional mas recomendado)
-  const snapshot = await get(ref(db, "equipas"));
-  const equipas = snapshot.val();
-  if (!equipas) return;
+  // 2. APAGAR TODAS AS EQUIPAS
+  await set(ref(db, "equipas"), null);
 
-  for (const id in equipas) {
-    await update(ref(db, `equipas/${id}`), {
-      pontosNegocio: 100,
-      pontosCliente: 100,
-      respondeuNestaRonda: false
-    });
-  }
-
-  alert("Jogo reiniciado com sucesso.");
+  alert("Jogo reiniciado. As equipas podem voltar a entrar.");
 }
 
 /* ===========================
