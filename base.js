@@ -26,6 +26,11 @@ const db = getDatabase(app);
 /* ===========================
    ESTADO GLOBAL
 =========================== */
+
+export function atualizarEstadoGlobal(dados) {
+  return update(ref(db, "estadoGlobal"), dados);
+}
+
 export function ouvirEstadoGlobal(callback) {
   onValue(ref(db, "estadoGlobal"), snap => callback(snap.val()));
 }
