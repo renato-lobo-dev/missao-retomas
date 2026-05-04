@@ -10,17 +10,13 @@ import {
 
 import { perguntas } from "./perguntas.js";
 
-/* ===========================
-   ESTADO LOCAL
-=========================== */
+
 
 let respostaSelecionada = null;
 let riscoSelecionado = null;
 let interacaoBloqueada = false;
 
-/* ===========================
-   INICIALIZAÇÃO
-=========================== */
+
 
 document.addEventListener("DOMContentLoaded", () => {
   ouvirEstadoGlobal(atualizarRonda);
@@ -28,9 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   prepararEventos();
 });
 
-/* ===========================
-   UI – RONDA
-=========================== */
+
 
 function atualizarRonda(estado) {
   if (!estado) return;
@@ -39,7 +33,7 @@ function atualizarRonda(estado) {
   const perguntaEl = document.getElementById("pergunta");
   const confirmarBtn = document.getElementById("confirmar");
 
-  // RONDA FECHADA
+
   if (estado.estadoRonda !== "aberta") {
     statusEl.textContent = "A aguardar próxima ronda…";
     perguntaEl.textContent = "";
@@ -48,7 +42,7 @@ function atualizarRonda(estado) {
     return;
   }
 
-  // RONDA ABERTA
+
   const perguntaAtual = perguntas[estado.perguntaAtual];
   if (!perguntaAtual) {
     perguntaEl.textContent = "Fim do jogo";
@@ -69,9 +63,7 @@ function atualizarRonda(estado) {
   desbloquearInteracao();
 }
 
-/* ===========================
-   UI – EQUIPA
-=========================== */
+
 
 function atualizarEquipaUI(equipa) {
   if (!equipa) return;
@@ -82,9 +74,7 @@ function atualizarEquipaUI(equipa) {
   
 }
 
-/* ===========================
-   EVENTOS
-=========================== */
+
 
 function prepararEventos() {
   document.querySelectorAll(".options button").forEach(btn => {
@@ -115,9 +105,7 @@ function destacarSelecao(selector, ativo) {
   ativo.style.opacity = "1";
 }
 
-/* ===========================
-   BLOQUEIO / DESBLOQUEIO
-=========================== */
+
 
 function bloquearInteracao() {
   interacaoBloqueada = true;
@@ -131,7 +119,7 @@ function bloquearInteracao() {
   confirmarBtn.textContent = "Resposta submetida";
 
   document.getElementById("roundStatus").textContent =
-    "Resposta submetida. Aguarde…";
+    "Resposta submetida. Aguarda…";
 }
 
 function desbloquearInteracao() {
@@ -148,12 +136,8 @@ function desbloquearInteracao() {
 
   const confirmarBtn = document.getElementById("confirmar");
   confirmarBtn.disabled = false;
-  confirmarBtn.textContent = "Confirmar decisão";
+  confirmarBtn.textContent = "Confirmar a tua decisão decisão";
 }
-
-/* ===========================
-   CONFIRMAÇÃO DA RESPOSTA
-=========================== */
 
 async function confirmarResposta() {
   if (interacaoBloqueada) return;
@@ -194,7 +178,7 @@ async function confirmarResposta() {
     impactoPC = correta ? 20 : -20;
   }
 
-  // Ler equipa UMA VEZ
+
   const equipaId = localStorage.getItem("equipaId");
   if (!equipaId) return;
 
