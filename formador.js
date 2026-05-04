@@ -91,12 +91,29 @@ async function proximaPergunta() {
   });
 }
 
-function resetJogo() {
-  atualizarEstadoGlobal({
+async function resetJogo() {
+  // Reset estado global
+  await set(ref(db, "estadoGlobal"), {
+    estadoRonda: "fechada",
     perguntaAtual: 0,
     rondaAtual: 0,
-    estadoRonda: "fechada"
+    totalRondas: perguntas.length
   });
+
+  // Reset estado das equipas (opcional mas recomendado)
+  const snapshot = await get(ref(db, "equipas"));
+  const equipas = snapshot.val();
+  if (!equipas) return;
+
+  for (const id in equipas) {
+    await update(ref(db, `equipas/${id}`), {
+      pontosNegocio: 100,
+      pontosCliente: 100,
+      respondeuNestaRonda: false
+    });
+  }
+
+  alert("Jogo reiniciado com sucesso.");
 }
 
 /* ===========================
