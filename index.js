@@ -18,19 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     inicializarEstadoGlobal();
 
     // cria equipa no Firebase
-    
-  export function registarEquipa(nome) {
-  const novaEquipa = push(ref(db, "equipas"));
-
-  set(novaEquipa, {
-    nome,
-    pontosNegocio: 100,
-    pontosCliente: 100,
-    respondeuNestaRonda: false
-  });
-
-  localStorage.setItem("equipaId", novaEquipa.key);
-}
+    registarEquipa(nome);
 
 
     // vai para a página da equipa
