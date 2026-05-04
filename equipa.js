@@ -124,41 +124,56 @@ function limparSelecoes() {
    LÓGICA DO JOGO
 =========================== */
 
+import { get, ref } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+import { db } from "./base.js";
+
 function confirmarResposta() {
   if (!respostaSelecionada || !riscoSelecionado) {
     alert("Escolhe uma opção e um nível de risco.");
     return;
   }
 
-  ouvirEstadoGlobal((estado) => {
+  // bloqueio local para impedir duplo clique
+  document.getElementById("confirmar").disabled = true;
+
+  // obter estado global UMA VEZ
+  get(ref(db, "estadoGlobal")).then(snapshotEstado => {
+    const estado = snapshotEstado.val();
     if (!estado || estado.estadoRonda !== "aberta") return;
 
     const perguntaAtual = perguntas[estado.perguntaAtual];
     if (!perguntaAtual) return;
 
     const correta = respostaSelecionada === perguntaAtual.correta;
-    let impacto = correta
-      ? { ...perguntaAtual.impacto.correta }
-      : { ...perguntaAtual.impacto.errada };
+
+    let impactoPN = correta
+      ? perguntaAtual.impacto.correta.pn
+      : perguntaAtual.impacto.errada.pn;
+    let impactoPC = correta
+      ? perguntaAtual.impacto.correta.pc
+      : perguntaAtual.impacto.errada.pc;
 
     // aplicar risco
     if (riscoSelecionado === "2") {
-      impacto.pn *= 2;
-      impacto.pc *= 2;
+      impactoPN *= 2;
+      impactoPC *= 2;
     }
-
     if (riscoSelecionado === "all") {
-      impacto.pn = correta ? 20 : -20;
-      impacto.pc = correta ? 20 : -20;
+      impactoPN = correta ? 20 : -20;
+      impactoPC = correta ? 20 : -20;
     }
 
-    // 🔑 somar aos pontos atuais
-    ouvirEquipa((equipa) => {
-      if (!equipa) return;
+    // obter equipa UMA VEZ
+    const equipaId = localStorage.getItem("equipaId");
+    if (!equipaId) return;
+
+    get(ref(db, `equipas/${equipaId}`)).then(snapshotEquipa => {
+      const equipa = snapshotEquipa.val();
+      if (!equipa || equipa.respondeuNestaRonda) return;
 
       atualizarEquipa({
-        pontosNegocio: equipa.pontosNegocio + impacto.pn,
-        pontosCliente: equipa.pontosCliente + impacto.pc,
+        pontosNegocio: equipa.pontosNegocio + impactoPN,
+        pontosCliente: equipa.pontosCliente + impactoPC,
         respondeuNestaRonda: true
       });
     });
