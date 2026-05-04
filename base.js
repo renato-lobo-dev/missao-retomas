@@ -137,5 +137,6 @@ export function ouvirTodasEquipas(callback) {
 export {
   db,
   ref,
-  get
+  get,
+  set
 };
