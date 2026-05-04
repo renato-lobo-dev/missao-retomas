@@ -3,6 +3,7 @@ import {
   db,
   ref,
   get,
+  set,
   inicializarEstadoGlobal,
   atualizarEstadoGlobal,
   ouvirEstadoGlobal,
