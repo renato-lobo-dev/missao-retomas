@@ -1,0 +1,24 @@
+// index.js
+import { registarEquipa, inicializarEstadoGlobal } from "./base.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("entrarBtn");
+
+  btn.addEventListener("click", () => {
+    const nome = document.getElementById("teamName").value.trim();
+
+    if (!nome) {
+      alert("Por favor, insere o nome da equipa.");
+      return;
+    }
+
+    // garante que o estado global existe
+    inicializarEstadoGlobal();
+
+    // cria equipa no Firebase
+    registarEquipa(nome);
+
+    // vai para a página da equipa
+    window.location.href = "equipa.html";
+  });
+});
