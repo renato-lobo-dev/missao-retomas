@@ -1,50 +1,77 @@
 // equipa.js
-
 import {
   ouvirEstadoGlobal,
   ouvirEquipa,
   atualizarEquipa
 } from "./base.js";
 
+import { perguntas } from "./perguntas.js";
 
-let resposta = null;
-let risco = null;
-let estadoGlobalAtual = null;
+/* ===========================
+   ESTADO LOCAL
+=========================== */
+
+let respostaSelecionada = null;
+let riscoSelecionado = null;
+
+/* ===========================
+   INICIALIZAÇÃO
+=========================== */
 
 document.addEventListener("DOMContentLoaded", () => {
   ouvirEstadoGlobal(atualizarRonda);
   ouvirEquipa(atualizarEquipaUI);
-
   prepararEventos();
 });
 
 /* ===========================
-   UI
+   UI – RONDA
 =========================== */
 
-
 function atualizarRonda(estado) {
-  // ✅ PROTEÇÃO OBRIGATÓRIA
+  // ✅ proteção obrigatória
   if (!estado) {
-    console.warn("estadoGlobal ainda não existe");
+    console.warn("estadoGlobal ainda não disponível");
     return;
   }
 
-  const status = document.getElementById("roundStatus");
-  const pergunta = document.getElementById("pergunta");
-  const confirmar = document.getElementById("confirmar");
+  const statusEl = document.getElementById("roundStatus");
+  const perguntaEl = document.getElementById("pergunta");
+  const confirmarBtn = document.getElementById("confirmar");
 
   if (estado.estadoRonda !== "aberta") {
-    status.textContent = "A aguardar próxima ronda…";
-    pergunta.textContent = "";
-    confirmar.disabled = true;
-  } else {
-    status.textContent = "Ronda ativa";
-    pergunta.textContent = `Pergunta ${estado.perguntaAtual + 1}`;
-    confirmar.disabled = false;
+    statusEl.textContent = "A aguardar próxima ronda…";
+    perguntaEl.textContent = "";
+    confirmarBtn.disabled = true;
+    limparSelecoes();
+    return;
   }
+
+  // ✅ ronda aberta
+  statusEl.textContent = "Ronda ativa";
+
+  const perguntaAtual = perguntas[estado.perguntaAtual];
+  if (!perguntaAtual) {
+    perguntaEl.textContent = "Fim do jogo";
+    confirmarBtn.disabled = true;
+    return;
+  }
+
+  perguntaEl.textContent = perguntaAtual.pergunta;
+
+  // atualizar texto das opções
+  document.querySelectorAll(".options button").forEach(btn => {
+    const key = btn.dataset.opcao;
+    btn.textContent = perguntaAtual.opcoes[key];
+  });
+
+  confirmarBtn.disabled = false;
+  limparSelecoes();
 }
 
+/* ===========================
+   UI – EQUIPA
+=========================== */
 
 function atualizarEquipaUI(equipa) {
   if (!equipa) return;
@@ -60,51 +87,80 @@ function atualizarEquipaUI(equipa) {
 
 function prepararEventos() {
   document.querySelectorAll(".options button").forEach(btn => {
-    btn.onclick = () => resposta = btn.dataset.opcao;
+    btn.addEventListener("click", () => {
+      respostaSelecionada = btn.dataset.opcao;
+      destacarSelecao(".options button", btn);
+    });
   });
 
   document.querySelectorAll(".risk button").forEach(btn => {
-    btn.onclick = () => risco = btn.dataset.risco;
+    btn.addEventListener("click", () => {
+      riscoSelecionado = btn.dataset.risco;
+      destacarSelecao(".risk button", btn);
+    });
   });
 
-  document.getElementById("confirmar").onclick = confirmarResposta;
+  document.getElementById("confirmar")
+    .addEventListener("click", confirmarResposta);
+}
+
+function destacarSelecao(selector, elemento) {
+  document.querySelectorAll(selector).forEach(b => {
+    b.style.opacity = "0.5";
+  });
+  elemento.style.opacity = "1";
+}
+
+function limparSelecoes() {
+  respostaSelecionada = null;
+  riscoSelecionado = null;
+
+  document.querySelectorAll(".options button, .risk button").forEach(b => {
+    b.style.opacity = "1";
+  });
 }
 
 /* ===========================
-   JOGO
+   LÓGICA DO JOGO
 =========================== */
 
-
 function confirmarResposta() {
-  if (!resposta || !risco) {
-    alert("Escolhe resposta e risco.");
+  if (!respostaSelecionada || !riscoSelecionado) {
+    alert("Escolhe uma opção e um nível de risco.");
     return;
   }
 
-  const correta = resposta === "A";
+  ouvirEstadoGlobal((estado) => {
+    if (!estado || estado.estadoRonda !== "aberta") return;
 
-  let impactoPN = correta ? 10 : -10;
-  let impactoPC = correta ? 5 : -5;
+    const perguntaAtual = perguntas[estado.perguntaAtual];
+    if (!perguntaAtual) return;
 
-  if (risco === "2") {
-    impactoPN *= 2;
-    impactoPC *= 2;
-  }
+    const correta = respostaSelecionada === perguntaAtual.correta;
+    let impacto = correta
+      ? { ...perguntaAtual.impacto.correta }
+      : { ...perguntaAtual.impacto.errada };
 
-  if (risco === "all") {
-    impactoPN = correta ? 20 : -20;
-    impactoPC = correta ? 20 : -20;
-  }
+    // aplicar risco
+    if (riscoSelecionado === "2") {
+      impacto.pn *= 2;
+      impacto.pc *= 2;
+    }
 
-  // 🔑 LER ESTADO ATUAL DA EQUIPA ANTES DE ESCREVER
-  ouvirEquipa((equipa) => {
-    if (!equipa) return;
+    if (riscoSelecionado === "all") {
+      impacto.pn = correta ? 20 : -20;
+      impacto.pc = correta ? 20 : -20;
+    }
 
-    atualizarEquipa({
-      pontosNegocio: equipa.pontosNegocio + impactoPN,
-      pontosCliente: equipa.pontosCliente + impactoPC,
-      respondeuNestaRonda: true
+    // 🔑 somar aos pontos atuais
+    ouvirEquipa((equipa) => {
+      if (!equipa) return;
+
+      atualizarEquipa({
+        pontosNegocio: equipa.pontosNegocio + impacto.pn,
+        pontosCliente: equipa.pontosCliente + impacto.pc,
+        respondeuNestaRonda: true
+      });
     });
   });
 }
-
