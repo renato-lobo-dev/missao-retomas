@@ -1,9 +1,6 @@
 // index.js
 console.log("INDEX.JS A EXECUTAR");
 
-localStorage.clear();
-location.reload();
-
 import { registarEquipa, inicializarEstadoGlobal } from "./base.js";
 
 document.addEventListener("DOMContentLoaded", () => {
