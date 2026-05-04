@@ -31,23 +31,36 @@
       cursor: pointer;
     }
 
-    .open {
-      background: #28a745;
-      color: white;
-    }
+    .open { background: #28a745; color: white; }
+    .next { background: #2a13fd; color: white; }
+    .reset { background: #ffffff; color: #000; }
 
-    .close {
-      background: #dc3545;
-      color: white;
-    }
-
-    .question-box {
-      background: #222;
+    
+    .question-panel {
+      display: block;          /* ✅ força visibilidade */
+      background: #ffffff;
+      color: #1f2933;
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      font-size: 1.3em;
     }
+
+
+    #perguntaAtualTexto {
+      color: #1f2933;
+    }
+
+    #solucao {
+      background: #f5f6f8;
+      color: #1f2933;
+      margin-top: 16px;
+      padding: 14px;
+      border-left: 4px solid #0050aa;
+      border-radius: 6px;
+    }
+
+    .explicacao { color: #333; }
+    .hidden { display: none; }
 
     .grid {
       display: grid;
@@ -71,26 +84,31 @@
 
 <body>
 
-  <h1>🎮 Missão Retomas – Controlo do Formador</h1>
+  <h1>Missão Retomas – Controlo do Formador</h1>
 
-  <!-- CONTROLOS -->
   <div class="controls">
-    <button class="open" id="abrirRonda">▶️ Desbloquear próxima ronda</button>
-    <button class="close" id="fecharRonda">⛔ Encerrar ronda</button>
+    <button class="open" id="abrirRonda">Abrir ronda</button>
+    <button class="next" id="proximaPergunta">Próxima pergunta</button>
+    <button class="reset" id="resetJogo">Reset jogo</button>
   </div>
 
-  <!-- PERGUNTA ATUAL -->
-  <div class="question-box" id="perguntaAtual">
-    Pergunta atual aparecerá aqui
-  </div>
+  <div class="question-panel">
+  <h2 id="perguntaAtualTexto">Pergunta:</h2>
 
-  <!-- RANKING / ESTADO DAS EQUIPAS -->
-  <div class="grid" id="equipas">
-    
+  <div id="solucao" class="hidden">
+    <p><strong>Resposta correta:</strong>
+      <span id="respostaCorreta"></span>
+    </p>
+    <p class="explicacao" id="explicacaoResposta"></p>
   </div>
-  
+</div>
+
+  <button id="fecharPergunta">Fechar pergunta</button>
+
+  <div class="grid" id="equipas"></div>
+
+<!-- ✅ CARREGAMENTO CORRETO DO JS -->
 <script type="module" src="formador.js"></script>
-<script type="module" src="base.js"></script>
-<script type="module" src="formador.js"></script>
+
 </body>
 </html>

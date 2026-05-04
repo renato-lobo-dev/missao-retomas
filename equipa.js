@@ -2,7 +2,10 @@
 import {
   ouvirEstadoGlobal,
   ouvirEquipa,
-  atualizarEquipa
+  atualizarEquipa,
+  db,
+  ref,
+  get
 } from "./base.js";
 
 import { perguntas } from "./perguntas.js";
@@ -13,6 +16,7 @@ import { perguntas } from "./perguntas.js";
 
 let respostaSelecionada = null;
 let riscoSelecionado = null;
+let interacaoBloqueada = false;
 
 /* ===========================
    INICIALIZAÇÃO
@@ -29,44 +33,40 @@ document.addEventListener("DOMContentLoaded", () => {
 =========================== */
 
 function atualizarRonda(estado) {
-  // ✅ proteção obrigatória
-  if (!estado) {
-    console.warn("estadoGlobal ainda não disponível");
-    return;
-  }
+  if (!estado) return;
 
   const statusEl = document.getElementById("roundStatus");
   const perguntaEl = document.getElementById("pergunta");
   const confirmarBtn = document.getElementById("confirmar");
 
+  // RONDA FECHADA
   if (estado.estadoRonda !== "aberta") {
     statusEl.textContent = "A aguardar próxima ronda…";
     perguntaEl.textContent = "";
     confirmarBtn.disabled = true;
-    limparSelecoes();
+    bloquearInteracao();
     return;
   }
 
-  // ✅ ronda aberta
-  statusEl.textContent = "Ronda ativa";
-
+  // RONDA ABERTA
   const perguntaAtual = perguntas[estado.perguntaAtual];
   if (!perguntaAtual) {
     perguntaEl.textContent = "Fim do jogo";
     confirmarBtn.disabled = true;
+    bloquearInteracao();
     return;
   }
 
+  statusEl.textContent = "Ronda ativa";
   perguntaEl.textContent = perguntaAtual.pergunta;
 
-  // atualizar texto das opções
+  // Atualizar opções
   document.querySelectorAll(".options button").forEach(btn => {
     const key = btn.dataset.opcao;
     btn.textContent = perguntaAtual.opcoes[key];
   });
 
-  confirmarBtn.disabled = false;
-  limparSelecoes();
+  desbloquearInteracao();
 }
 
 /* ===========================
@@ -79,6 +79,7 @@ function atualizarEquipaUI(equipa) {
   document.getElementById("teamName").textContent = equipa.nome;
   document.getElementById("pontosNegocio").textContent = equipa.pontosNegocio;
   document.getElementById("pontosCliente").textContent = equipa.pontosCliente;
+  
 }
 
 /* ===========================
@@ -88,6 +89,7 @@ function atualizarEquipaUI(equipa) {
 function prepararEventos() {
   document.querySelectorAll(".options button").forEach(btn => {
     btn.addEventListener("click", () => {
+      if (interacaoBloqueada) return;
       respostaSelecionada = btn.dataset.opcao;
       destacarSelecao(".options button", btn);
     });
@@ -95,89 +97,114 @@ function prepararEventos() {
 
   document.querySelectorAll(".risk button").forEach(btn => {
     btn.addEventListener("click", () => {
+      if (interacaoBloqueada) return;
       riscoSelecionado = btn.dataset.risco;
       destacarSelecao(".risk button", btn);
     });
   });
 
-  document.getElementById("confirmar")
+  document
+    .getElementById("confirmar")
     .addEventListener("click", confirmarResposta);
 }
 
-function destacarSelecao(selector, elemento) {
+function destacarSelecao(selector, ativo) {
   document.querySelectorAll(selector).forEach(b => {
-    b.style.opacity = "0.5";
+    b.style.opacity = "0.4";
   });
-  elemento.style.opacity = "1";
-}
-
-function limparSelecoes() {
-  respostaSelecionada = null;
-  riscoSelecionado = null;
-
-  document.querySelectorAll(".options button, .risk button").forEach(b => {
-    b.style.opacity = "1";
-  });
+  ativo.style.opacity = "1";
 }
 
 /* ===========================
-   LÓGICA DO JOGO
+   BLOQUEIO / DESBLOQUEIO
 =========================== */
 
-import { get, ref } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
-import { db } from "./base.js";
+function bloquearInteracao() {
+  interacaoBloqueada = true;
 
-function confirmarResposta() {
+  document
+    .querySelectorAll(".options button, .risk button")
+    .forEach(btn => btn.disabled = true);
+
+  const confirmarBtn = document.getElementById("confirmar");
+  confirmarBtn.disabled = true;
+  confirmarBtn.textContent = "Resposta submetida";
+
+  document.getElementById("roundStatus").textContent =
+    "Resposta submetida. Aguarde…";
+}
+
+function desbloquearInteracao() {
+  interacaoBloqueada = false;
+  respostaSelecionada = null;
+  riscoSelecionado = null;
+
+  document
+    .querySelectorAll(".options button, .risk button")
+    .forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = "1";
+    });
+
+  const confirmarBtn = document.getElementById("confirmar");
+  confirmarBtn.disabled = false;
+  confirmarBtn.textContent = "Confirmar decisão";
+}
+
+/* ===========================
+   CONFIRMAÇÃO DA RESPOSTA
+=========================== */
+
+async function confirmarResposta() {
+  if (interacaoBloqueada) return;
+
   if (!respostaSelecionada || !riscoSelecionado) {
     alert("Escolhe uma opção e um nível de risco.");
     return;
   }
 
-  // bloqueio local para impedir duplo clique
-  document.getElementById("confirmar").disabled = true;
+  bloquearInteracao();
 
-  // obter estado global UMA VEZ
-  get(ref(db, "estadoGlobal")).then(snapshotEstado => {
-    const estado = snapshotEstado.val();
-    if (!estado || estado.estadoRonda !== "aberta") return;
+  // Ler estado global UMA VEZ
+  const snapshotEstado = await get(ref(db, "estadoGlobal"));
+  const estado = snapshotEstado.val();
+  if (!estado || estado.estadoRonda !== "aberta") return;
 
-    const perguntaAtual = perguntas[estado.perguntaAtual];
-    if (!perguntaAtual) return;
+  const perguntaAtual = perguntas[estado.perguntaAtual];
+  if (!perguntaAtual) return;
 
-    const correta = respostaSelecionada === perguntaAtual.correta;
+  const correta = respostaSelecionada === perguntaAtual.correta;
 
-    let impactoPN = correta
-      ? perguntaAtual.impacto.correta.pn
-      : perguntaAtual.impacto.errada.pn;
-    let impactoPC = correta
-      ? perguntaAtual.impacto.correta.pc
-      : perguntaAtual.impacto.errada.pc;
+  let impactoPN = correta
+    ? perguntaAtual.impacto.correta.pn
+    : perguntaAtual.impacto.errada.pn;
 
-    // aplicar risco
-    if (riscoSelecionado === "2") {
-      impactoPN *= 2;
-      impactoPC *= 2;
-    }
-    if (riscoSelecionado === "all") {
-      impactoPN = correta ? 20 : -20;
-      impactoPC = correta ? 20 : -20;
-    }
+  let impactoPC = correta
+    ? perguntaAtual.impacto.correta.pc
+    : perguntaAtual.impacto.errada.pc;
 
-    // obter equipa UMA VEZ
-    const equipaId = localStorage.getItem("equipaId");
-    if (!equipaId) return;
+  // Aplicar risco
+  if (riscoSelecionado === "2") {
+    impactoPN *= 2;
+    impactoPC *= 2;
+  }
 
-    get(ref(db, `equipas/${equipaId}`)).then(snapshotEquipa => {
-      const equipa = snapshotEquipa.val();
-      if (!equipa || equipa.respondeuNestaRonda) return;
+  if (riscoSelecionado === "all") {
+    impactoPN = correta ? 20 : -20;
+    impactoPC = correta ? 20 : -20;
+  }
 
-      atualizarEquipa({
-        pontosNegocio: equipa.pontosNegocio + impactoPN,
-        pontosCliente: equipa.pontosCliente + impactoPC,
-        respondeuNestaRonda: true
-      });
-    });
+  // Ler equipa UMA VEZ
+  const equipaId = localStorage.getItem("equipaId");
+  if (!equipaId) return;
+
+  const snapshotEquipa = await get(ref(db, `equipas/${equipaId}`));
+  const equipa = snapshotEquipa.val();
+  if (!equipa) return;
+
+  await atualizarEquipa({
+    pontosNegocio: equipa.pontosNegocio + impactoPN,
+    pontosCliente: equipa.pontosCliente + impactoPC,
+    respondeuNestaRonda: true
   });
 }
-
-export { db };

@@ -35,14 +35,32 @@ const db = getDatabase(app);
 /**
  * Cria o estado global do jogo (se ainda não existir)
  */
-export function inicializarEstadoGlobal() {
-  set(ref(db, "estadoGlobal"), {
-    estadoRonda: "fechada",   // aberta | fechada
-    rondaAtual: 0,
+
+export async function inicializarEstadoGlobal() {
+  const snapshot = await get(ref(db, "estadoGlobal"));
+
+  if (!snapshot.exists()) {
+    await set(ref(db, "estadoGlobal"), {
+      estadoRonda: "fechada",
+      perguntaAtual: 0,
+      rondaAtual: 0,
+      totalRondas: 7
+    });
+  }
+}
+
+
+
+
+export function resetEstadoGlobal() {
+  return set(ref(db, "estadoGlobal"), {
+    estadoRonda: "fechada",
     perguntaAtual: 0,
+    rondaAtual: 0,
     totalRondas: 7
   });
 }
+
 
 /**
  * Listener reativo do estado global
