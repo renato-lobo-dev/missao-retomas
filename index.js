@@ -1,5 +1,9 @@
 // index.js
 console.log("INDEX.JS A EXECUTAR");
+
+localStorage.clear();
+location.reload();
+
 import { registarEquipa, inicializarEstadoGlobal } from "./base.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -17,7 +21,20 @@ document.addEventListener("DOMContentLoaded", () => {
     inicializarEstadoGlobal();
 
     // cria equipa no Firebase
-    registarEquipa(nome);
+    
+  export function registarEquipa(nome) {
+  const novaEquipa = push(ref(db, "equipas"));
+
+  set(novaEquipa, {
+    nome,
+    pontosNegocio: 100,
+    pontosCliente: 100,
+    respondeuNestaRonda: false
+  });
+
+  localStorage.setItem("equipaId", novaEquipa.key);
+}
+
 
     // vai para a página da equipa
     window.location.href = "equipa.html";
