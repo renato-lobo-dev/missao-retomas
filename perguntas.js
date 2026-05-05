@@ -6,15 +6,14 @@ export const perguntas = [
     pergunta: "Um cliente traz um iPhone 11 para retoma. O que fazes?",
     opcoes: {
       A: "Aceitas a retoma normalmente",
-      B: "Explicas que o modelo já não é elegível",
-      C: "Aceitas mas com valor simbólico",
-      D: "Informas que infelizmente já não retomamos esse equipamento, mas que estamos disponiveis para analisar outros equipamentos no futuro"
+      B: "Informas que infelizmente já não retomamos esse equipamento, mas que estamos disponiveis para analisar outros equipamentos no futuro",
+      C: "Aceitas mas com valor simbólico"
     },
-    correta: "D",
+    correta: "B",
     explicacao: "O iPhone 11 já não é elegível para retoma. É fundamental explicar o motivo,redirecionar a conversa para uma alternativa de venda e mostrar disponbilidade ao cliente.",
     impacto: {
       correta: { pn: +10, pc: 0 },
-      errada:  { pn: -15, pc: -10 }
+      errada:  { pn: -20, pc: -10 }
     }
   },
 
@@ -48,7 +47,7 @@ export const perguntas = [
     explicacao: "Um equipamento com algo dano físico é sempre um GRADE D, apenas recusamos equipamentos com humidade e com o corpo dobrado.",
     impacto: {
       correta: { pn: +10, pc: +5 },
-      errada:  { pn: -10, pc: -10 }
+      errada:  { pn: -15, pc: -15 }
     }
   },
 
